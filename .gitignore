@@ -1,8 +1,5 @@
 **/__pycache__
 **/.DS_Store
 output/*
-data/*
-dataset/*
 *.sh
-*.txt
 result/*

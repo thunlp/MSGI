@@ -509,6 +509,3 @@ class MultiSourceDataProcesser(object):
         return DataSet(feature_list)
 
 
-if __name__ == '__main__':
-    d = ImgProcesser()
-    d.download_image_thread()
