@@ -21,6 +21,57 @@ WORDNET_IMG_EMB_PATH = '/data1/private/lvchuancheng/img_embedding_wordnet'
 BABELNET_IMG_EMB_PATH = '/data1/private/lvchuancheng/babel_image_emb/'
 
 
+def read_list(line):
+    line = line[:-1].split('\t')
+    num = int(line[0])
+    assert(num == len(line[1:]))
+    return line[1:]
+
+
+def read_synset(f):
+    synset = {}
+    synset['id'] = f.readline()
+    if not synset['id']:
+        return
+    synset['id'] = synset['id'][:-1]
+    for k in ['w_e', 'w_c', 'w_f']:
+        synset[k] = read_list(f.readline())
+    for k in ['d_e_m', 'd_c_m', 'd_f_m']:
+        synset[k] = f.readline()[:-1]
+    for k in ['d_e', 'd_c', 'd_f']:
+        synset[k] = read_list(f.readline())
+    synset['i_m'] = f.readline()[:-1]
+    synset['i'] = read_list(f.readline())
+    return synset
+
+
+def read_babel_data(f):
+    babel_data = {}
+    while True:
+        d = read_synset(f)
+        if not d:
+            return babel_data
+        babel_data[d['id']] = d
+
+
+def read_babel_sememe(f):
+    lines = f.readlines()
+    babel_sememe = {line[:-1].split()[0]: line[:-1].split()[1:]
+                    for line in lines}
+    return babel_sememe
+
+
+def get_babel_data():
+    babel_data = read_babel_data(
+        open(os.path.join('data', 'babel_data_full.txt')))
+    babel_sememe = read_babel_sememe(
+        open(os.path.join('data', 'synset_sememes.txt')))
+
+    for k in babel_data:
+        babel_data[k]['s'] = babel_sememe[k]
+    pickle.dump(babel_data, open(os.path.join('data', 'babel_data'), 'wb'))
+
+
 def load_data(filename):
     data = pickle.load(open(filename, 'rb'))
     return data
@@ -34,6 +85,7 @@ def check_and_make(dir_path, filename):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
     return os.path.exists(os.path.join(dir_path, filename))
+
 
 class InputSample(object):
     def __init__(self, text, label):
@@ -209,7 +261,7 @@ class MultiSourceDataProcesser(object):
         self.babel_data = load_data(babel_data_file)
         self.sememe_idx = load_data(sememe_idx_file)
         self.tokenizer = tokenizer
-        self.idx_sememe = {self.sememe_idx[i]: i for i in self.sememe_idx.keys()}
+        self.idx_sememe = {self.sememe_idx[i]                           : i for i in self.sememe_idx.keys()}
         self.hownet_dict = OpenHowNet.HowNetDict()
         self.img_embedding_wordnet = pickle.load(
             open(WORDNET_IMG_EMB_PATH, 'rb'))
@@ -323,7 +375,7 @@ class MultiSourceDataProcesser(object):
     def create_text_features(self, en_lang=True, zh_lang=False, fr_lang=False, gloss=True, word=False):
         data_file_name = '{}{}{}{}{}text_data'.format(
             'en_' if en_lang else '', 'zh_' if zh_lang else '', 'fr_' if fr_lang else '', 'ex_' if word else '', 'gloss_' if gloss else '')
-        data_file_path = os.path.join('data/','feature_data/')
+        data_file_path = os.path.join('data/', 'feature_data/')
         if check_and_make(data_file_path, data_file_name):
             return load_data(os.path.join(data_file_path, data_file_name))
         feature_dict = {}
@@ -338,7 +390,7 @@ class MultiSourceDataProcesser(object):
     def create_pretrain_features(self, en_lang=True, zh_lang=False, gloss=True, word=False):
         data_file_name = '{}{}{}{}pretrain_data'.format(
             'en_' if en_lang else '', 'zh_' if zh_lang else '',  'ex_' if word else '', 'gloss_' if gloss else '')
-        data_file_path = os.path.join('data/','pretrain_feature_data/')
+        data_file_path = os.path.join('data/', 'pretrain_feature_data/')
         if check_and_make(data_file_path, data_file_name):
             return load_data(os.path.join(data_file_path, data_file_name))
         feature_dict = {}
@@ -364,9 +416,9 @@ class MultiSourceDataProcesser(object):
     def create_multi_source_features(self, en_lang=True, zh_lang=True, fr_lang=True, gloss=True, word=True, img=True):
         data_file_name = '{}{}{}{}{}{}data_main'.format(
             'en_' if en_lang else '', 'zh_' if zh_lang else '', 'fr_' if fr_lang else '', 'ex_' if word else '', 'gloss_' if gloss else '', 'img_' if img else '')
-        data_file_path = os.path.join('data/','multi_source_feature_data/')
+        data_file_path = os.path.join('data/', 'multi_source_feature_data/')
         if check_and_make(data_file_path, data_file_name):
-            return load_data(os.path.join(data_file_path,data_file_name))
+            return load_data(os.path.join(data_file_path, data_file_name))
 
         text_feature_dic = self.create_text_features(
             en_lang=en_lang, zh_lang=zh_lang, fr_lang=fr_lang, gloss=gloss, word=word)
@@ -379,7 +431,8 @@ class MultiSourceDataProcesser(object):
                 img_feature = None
             feature_dict[k] = MultiSourceInputFeature(
                 text_feature_dic[k].input_ids, text_feature_dic[k].input_mask, img_feature, text_feature_dic[k].label_id)
-        save_data(feature_dict, os.path.join('data/','multi_source_feature_data/')+data_file_name)
+        save_data(feature_dict, os.path.join(
+            'data/', 'multi_source_feature_data/')+data_file_name)
 
     def create_dataset(self, feature_dic, data_set_list):
         feature_dic = load_data(feature_dic)
@@ -449,7 +502,6 @@ class MultiSourceDataProcesser(object):
         labels = torch.tensor(labels, dtype=torch.int64)
         return text_ids, text_mask, img_ids, labels
 
-
     def ms_attention_collate_fn(self, batch):
         idx_list = [i[0] for i in batch]
         text_ids = self.__padding([i[1].text_ids for i in batch], 1)
@@ -507,5 +559,3 @@ class MultiSourceDataProcesser(object):
             'data/multi_source_feature_data/'+feature_dic)
         feature_list = [[i, feature_dic[i]] for i in data_set_list]
         return DataSet(feature_list)
-
-
