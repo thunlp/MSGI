@@ -1,5 +1,5 @@
 # MSGI
-Official code and data of the Findings of ACL 2022 paper "Sememe Prediction for BabelNet Synsets using Multilingual and Multimodal Information"
+Official code and data of the Findings of ACL 2022 paper "Sememe Prediction for BabelNet Synsets using Multilingual and Multimodal Information" [[pdf](https://aclanthology.org/2022.findings-acl.15.pdf)]
 
 ## Introduction
 In linguistics, a sememe is defined as the minimum semantic unit of languages. Sememe knowledge bases (KBs), which are built by manually annotating words with sememes, have been successfully applied to various NLP tasks. However, existing sememe KBs only cover a few languages, which hinders the wide utilization of sememes. To address this issue, the task of sememe prediction for BabelNet synsets (SPBS) is presented, aiming to build a multilingual sememe KB based on BabelNet, a multilingual encyclopedia dictionary. By automatically predicting sememes for a BabelNet synset, the words in many languages in the synset would obtain sememe annotations simultaneously. However, previous SPBS methods have not taken full advantage of the abundant information in BabelNet. In this paper, we utilize the multilingual synonyms, multilingual glosses and images in BabelNet for SPBS. We design a multimodal information fusion model to encode and combine this information for sememe prediction. Experimental results show the substantial outperformance of our model over previous methods (about 10 MAP and F1 scores).
@@ -25,12 +25,25 @@ Please unzip the `data.zip` in the root directory of the repository. Under the `
     ```
     bn:00076380n	image|图像 shows|表演物 disseminate|传播 institution|机构 ProperName|专 information|信息
     ```
-Under the `dataset` folder is the data split of the data. The data is split into training set, validation set and test set in an 8:1:1 ratio.
+    Under the `dataset` folder is the data split of the data. The data is split into the training set, validation set and test set in the 8:1:1 ratio.
 
 ## Usage
 
-1. `utils/data_utils.py` : Provides APIs and classes to download images, read source data, preprocess the data, tokenize and get dataloaders.
-2. `utils/train_utils.py` : Provides APIs to assist training.
-3. `model.py` and `train.py` : Provides the model and training process.
+1. `utils/data_utils.py` : Provide APIs and classes to download images, read source data, preprocess the data, tokenize and get data loaders.
+2. `utils/train_utils.py` : Provide APIs to assist training.
+3. `model.py` and `train.py` : Provide the model and training process.
 
-## Citation
+## Cite
+
+If the code or data help you, please cite the following two papers.
+
+```
+@inproceedings{qi-etal-2022-sememe,
+    title = "Sememe Prediction for {B}abel{N}et Synsets using Multilingual and Multimodal Information",
+    author = "Qi, Fanchao  and Lv, Chuancheng  and  Liu, Zhiyuan  and  Meng, Xiaojun  and Sun, Maosong  and  Zheng, Hai-Tao",
+    booktitle = "Findings of the Association for Computational Linguistics: ACL 2022",
+    year = "2022",
+    url = "https://aclanthology.org/2022.findings-acl.15",
+    pages = "158--168",
+}
+```
